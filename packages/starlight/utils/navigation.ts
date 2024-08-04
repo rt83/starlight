@@ -26,6 +26,7 @@ export interface Link {
 	isCurrent: boolean;
 	badge: Badge | undefined;
 	attrs: LinkHTMLAttributes;
+	icon : string | undefined
 }
 
 interface Group {
@@ -34,6 +35,7 @@ interface Group {
 	entries: (Link | Group)[];
 	collapsed: boolean;
 	badge: Badge | undefined;
+	icon: string | undefined;
 }
 
 export type SidebarEntry = Link | Group;
@@ -84,6 +86,7 @@ function configItemToEntry(
 			entries: item.items.map((i) => configItemToEntry(i, currentPathname, locale, routes)),
 			collapsed: item.collapsed,
 			badge: item.badge,
+			icon : item.icon
 		};
 	}
 }
@@ -111,6 +114,7 @@ function groupFromAutogenerateConfig(
 		entries: sidebarFromDir(tree, currentPathname, locale, subgroupCollapsed ?? item.collapsed),
 		collapsed: item.collapsed,
 		badge: item.badge,
+		icon: item.icon,
 	};
 }
 
@@ -130,7 +134,7 @@ function linkFromSidebarLinkItem(
 		if (locale) href = '/' + locale + href;
 	}
 	const label = pickLang(item.translations, localeToLang(locale)) || item.label;
-	return makeSidebarLink(href, label, currentPathname, item.badge, item.attrs);
+	return makeSidebarLink(href, label, currentPathname, item.badge, item.icon, item.attrs);
 }
 
 /** Create a link entry from an automatic internal link item in user config. */
@@ -160,7 +164,7 @@ function linkFromInternalSidebarLinkItem(
 	}
 	const label =
 		pickLang(item.translations, localeToLang(locale)) || item.label || entry.entry.data.title;
-	return makeSidebarLink(entry.slug, label, currentPathname, item.badge, item.attrs);
+	return makeSidebarLink(entry.slug, label, currentPathname, item.badge, item.icon, item.attrs);
 }
 
 /** Process sidebar link options to create a link entry. */
@@ -169,13 +173,14 @@ function makeSidebarLink(
 	label: string,
 	currentPathname: string,
 	badge?: Badge,
+	icon? : string,
 	attrs?: LinkHTMLAttributes
 ): Link {
 	if (!isAbsolute(href)) {
 		href = formatPath(href);
 	}
 	const isCurrent = pathsMatch(encodeURI(href), currentPathname);
-	return makeLink({ label, href, isCurrent, badge, attrs });
+	return makeLink({ label, href, isCurrent, badge, icon, attrs });
 }
 
 /** Create a link entry */
@@ -183,15 +188,17 @@ function makeLink({
 	isCurrent = false,
 	attrs = {},
 	badge = undefined,
+	icon = undefined,
 	...opts
 }: {
 	label: string;
 	href: string;
 	isCurrent?: boolean;
 	badge?: Badge | undefined;
+	icon? : string | undefined;
 	attrs?: LinkHTMLAttributes | undefined;
 }): Link {
-	return { type: 'link', ...opts, badge, isCurrent, attrs };
+	return { type: 'link', ...opts, badge, icon, isCurrent, attrs };
 }
 
 /** Test if two paths are equivalent even if formatted differently. */
@@ -259,6 +266,7 @@ function linkFromRoute(route: Route, currentPathname: string): Link {
 		route.entry.data.sidebar.label || route.entry.data.title,
 		currentPathname,
 		route.entry.data.sidebar.badge,
+		route.entry.data.sidebar.icon,
 		route.entry.data.sidebar.attrs
 	);
 }
@@ -304,6 +312,7 @@ function groupFromDir(
 		entries,
 		collapsed,
 		badge: undefined,
+		icon: undefined
 	};
 }
 
